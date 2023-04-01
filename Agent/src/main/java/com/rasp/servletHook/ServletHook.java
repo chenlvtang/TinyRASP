@@ -1,6 +1,6 @@
-package com.servletHook;
+package com.rasp.servletHook;
 
-import com.utils.RASPUtils;
+import com.rasp.utils.RASPUtils;
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -23,7 +23,7 @@ public class ServletHook implements ClassFileTransformer {
                 ClassPool pool = ClassPool.getDefault();
                 ClassClassPath classPath = new ClassClassPath(this.getClass());
                 pool.insertClassPath(classPath);
-                System.out.println("In the ServletHook");
+                System.out.println("Into the ServletHook");
 
                 // 获取到servlet中的service方法
                 CtClass clz = pool.get(loadName);
@@ -43,7 +43,7 @@ public class ServletHook implements ClassFileTransformer {
                             + RASPUtils.class.getName() + ".clear();"
                             + "}");
                 }
-
+                System.out.println("Finish the ServletHook");
                 return clz.toBytecode();
             } catch (Exception e) {
                 System.out.println(e);

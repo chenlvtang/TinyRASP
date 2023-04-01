@@ -1,4 +1,4 @@
-package com.utils;
+package com.rasp.utils;
 
 public class ForTest {
     public static void alert(String message) {
