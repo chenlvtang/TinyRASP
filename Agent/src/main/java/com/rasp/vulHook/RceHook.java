@@ -48,8 +48,8 @@ public class RceHook implements ClassFileTransformer {
                             "utilsClass.getDeclaredMethod(\"alert\", " +
                             "new Class []{String.class});" +
                             // 调用告警方法
-                            "args = new Object[]{\"Hacker\"};" +
-                            "method.invoke(utilsObj, args);" +
+                            "Object[] value = new Object[]{(String) utilsClass.getDeclaredField(\"alertInfo\").get(null)};" +
+                            "method.invoke(utilsObj, value);" +
                             // 进行拦截
                             "return null;";
                     cb.insertBefore(code);
