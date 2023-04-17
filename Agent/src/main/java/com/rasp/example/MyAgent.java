@@ -18,7 +18,7 @@ public class MyAgent {
         ins.addTransformer(new FileHook(), true);
         System.out.println("======Premain Finish=======");
 
-        // 4. 重新定义所有已经加载过的类，这样可以确保所有的类都被 hook (不然FileInputStream Hook不上)
+        // 重新定义所有已经加载过的类，这样可以确保所有的类都被 hook (不然FileInputStream Hook不上)
         Class[] allLoadedClasses = ins.getAllLoadedClasses();
         for (Class aClass : allLoadedClasses) {
             if (ins.isModifiableClass(aClass) && !aClass.getName().startsWith("java.lang.invoke.LambdaForm")){
@@ -28,10 +28,4 @@ public class MyAgent {
         }
 
     }
-
-//    public static void agentmain(String args, Instrumentation ins) throws Exception {
-//        System.out.println("======Agentmain Begin=======");
-//        ins.addTransformer(new RceHook(), true);
-//        ins.retransformClasses(Class.forName("java.lang.ProcessImpl"));
-//    }
 }

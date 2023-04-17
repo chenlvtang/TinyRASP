@@ -279,6 +279,7 @@ public class RASPUtils {
 
     public static void getLog(String type) throws IOException {
         // 告警日志记录
+        System.setProperty("user.timezone", "GMT+8");
         Logger logger = LogManager.getLogger(RASPUtils.class);
         // 获取请求的IP和User-Agent、报文、堆栈信息
         String ip = RASPUtils.getIP();
