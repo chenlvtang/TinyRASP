@@ -58,7 +58,7 @@ My graduation project, from open source, gives back to open source
 + 总日志浏览
 + 攻击信息可视化
 
-❌防护规则还需完善（ORZ，目前非常简陋
+❌防护规则还需完善（ORZ，目前非常简陋，后期赶时间，大多用的JRASP的规则，哈哈哈，Sorry
 
 ❌漏洞的覆盖面较低，目前完成六类漏洞
 
@@ -67,6 +67,8 @@ My graduation project, from open source, gives back to open source
 ❌做着做着发现，Byte Buddy其实好像比Javassit更好用，哈哈 ，但是不想重构
 
 ### 部署效果
+
+<video src="https://chenlvtang.top/rasp.mkv"></video>
 
 漏洞防护（部署前和部署后的对比图）：
 
