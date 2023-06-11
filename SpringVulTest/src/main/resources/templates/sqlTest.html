@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Info</title>
+    <link th:href="@{/css/base.css}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<div class="container">
+    <div class="input-container">
+        <form id="my-form" method="POST" action="/sqlTest">
+            <input type="text" id="input-box" name="id" placeholder="输入学号进行查询">
+            <button type="submit" id="submit-btn">Submit</button>
+        </form>
+    </div>
+
+    <div th:if="${user != null}">
+        <p>ID: <span th:text="${user.id}"></span></p>
+        <p>Name: <span th:text="${user.name}"></span></p>
+        <p>Number: <span th:text="${user.number}"></span></p>
+    </div>
+</div>
+
+</body>
+</html>
