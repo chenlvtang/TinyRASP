@@ -1,5 +1,10 @@
-![image-20230611131112677](https://chenlvtang.top/pics/20230611131136.png)
-
+<a href="http://www.wtfpl.net/"><img
+       src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
+       width="80" height="15" alt="WTFPL" />
+</a>
+<div align=center>    
+<img src="https://chenlvtang.top/pics/20230611131136.png"/>
+</div>
 并没有拿到毕设中的高分，哈哈哈……（懂的都懂，就当作对自己所学知识的应用了，欢迎大家Fork参考学习和PR完善。
 
 # TinyRASP
@@ -89,6 +94,10 @@ https://github.com/chenlvtang/TinyRASP/assets/56435336/962ab5fd-b87b-484c-a889-d
 ### 致谢
 
 感谢各位师傅的技术博客、开源项目的慷慨大方，感谢ChatGPT，JRASP、OpenRASP，感谢感谢(●ˇ∀ˇ●)
+
+### 协议
+
+本项目遵循WTFPL协议，即"Do What The Fuck You Want To Public License"。
 
 ### 参考
 
