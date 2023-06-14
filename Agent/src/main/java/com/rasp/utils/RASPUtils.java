@@ -33,7 +33,7 @@ public class RASPUtils {
         responseContext.set(response);
     }
 
-    // 对Spring Boot 3.0、以及JakartaEE(Oracle有毒，还不允许叫JavaEE)的支持
+    // 对Spring Boot 3.0、以及JakartaEE(Oracle不允许高版本Servlet使用JavaEE)的支持
     public static void setRequest(jakarta.servlet.http.HttpServletRequest request) {
         requestContext.set(request);
     }

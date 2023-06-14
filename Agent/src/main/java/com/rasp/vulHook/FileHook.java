@@ -22,7 +22,7 @@ import java.util.Set;
 
 public class FileHook implements ClassFileTransformer {
     // 允许读取的文件格式
-    private static final Set<String> ALLOWED_FILE_EXTENSIONS = new HashSet<>(Arrays.asList("txt", "jpg"));
+    private static final Set<String> ALLOWED_FILE_EXTENSIONS = new HashSet<>(Arrays.asList("css", "jpg"));
     // 目录穿越黑名单
     private static String[] travelPath = new String[]{"../", "..\\", ".."};
     // 危险目录黑名单
@@ -45,7 +45,7 @@ public class FileHook implements ClassFileTransformer {
                 ClassClassPath classPath = new ClassClassPath(this.getClass());
                 pool.insertClassPath(classPath);
 
-                System.out.println("Into the RCEHook");
+                System.out.println("Into the FileHook");
                 CtClass clz = pool.get(loadName);
 
                 //init(File file)插桩
@@ -83,10 +83,13 @@ public class FileHook implements ClassFileTransformer {
                 RASPUtils.getLogAndAlert("FileRead");
                 throw new SecurityException("PathTraversal is not allowed: " + filePath);
             }
+            // 是否为危险目录
             if(isDangerPath(filePath)){
                 RASPUtils.getLogAndAlert("FileRead");
                 throw new SecurityException("DangerPath is not allowed: " + filePath);
             }
+            // 是否为允许的文件后缀
+
     }
 
     public static void checkFilePath(File file) throws Exception{

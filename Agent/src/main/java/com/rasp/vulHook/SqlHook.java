@@ -50,7 +50,7 @@ public class SqlHook implements ClassFileTransformer {
         }
         else{
             RASPUtils.getLogAndAlert("SQLInjection");
-            new SecurityException("SQL Injection : " + sql);
+            throw new SecurityException("SQL Injection : " + sql);
         }
     }
 

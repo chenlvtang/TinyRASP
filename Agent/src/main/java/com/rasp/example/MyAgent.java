@@ -1,8 +1,7 @@
 package com.rasp.example;
 
 import com.rasp.servletHook.ServletHook;
-import com.rasp.vulHook.FileHook;
-import com.rasp.vulHook.RceHook;
+import com.rasp.vulHook.*;
 
 
 import java.lang.instrument.ClassDefinition;
@@ -16,8 +15,10 @@ public class MyAgent {
         ins.addTransformer(new ServletHook(), true);
         ins.addTransformer(new RceHook(), true);
         ins.addTransformer(new FileHook(), true);
-        System.out.println("======Premain Finish=======");
-
+        ins.addTransformer(new SqlHook(), true);
+        ins.addTransformer(new SerialHook(), true);
+        ins.addTransformer(new JNDIHook(), true);
+        ins.addTransformer(new SpELHook(), true);
         // 重新定义所有已经加载过的类，这样可以确保所有的类都被 hook (不然FileInputStream Hook不上)
         Class[] allLoadedClasses = ins.getAllLoadedClasses();
         for (Class aClass : allLoadedClasses) {
@@ -26,6 +27,6 @@ public class MyAgent {
                 ins.retransformClasses(new Class[]{aClass});
             }
         }
-
+        System.out.println("======Premain Finish=======");
     }
 }

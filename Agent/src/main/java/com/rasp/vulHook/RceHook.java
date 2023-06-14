@@ -14,7 +14,7 @@ public class RceHook implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className,
                             Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
                             byte[] classfileBuffer) throws IllegalClassFormatException {
-        if (className.endsWith("ProcessImpl")) {
+        if (className.endsWith("ProcessImpl")||className.endsWith("UnixProcess")) {
             try {
                 String loadName = className.replace("/", ".");
                 ClassPool pool = ClassPool.getDefault();
