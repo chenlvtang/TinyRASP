@@ -2,14 +2,11 @@
        src="http://www.wtfpl.net/wp-content/uploads/2012/12/wtfpl-badge-4.png"
        width="80" height="15" alt="WTFPL" />
 </a>
-<div align=center>    
-<img src="https://chenlvtang.top/pics/20230611131136.png"/>
-</div>
-并没有拿到毕设中的高分，哈哈哈……（懂的都懂，就当作对自己所学知识的应用了，欢迎大家Fork参考学习和PR完善。
 
 # TinyRASP
 
-My graduation project, from open source, gives back to open source
+<details>
+<summary>背景</summary>
 
 ### 背景
 
@@ -18,6 +15,10 @@ My graduation project, from open source, gives back to open source
 ​	因此，本文基于新兴的RASP技术，设计并实现了一个针对Java的漏洞防护系统。通过在漏洞利用的关键函数上埋下RASP探针，实现运行时实时检测和日志记录，在能**检测到漏洞并实现告警页面重定向的同时，借助ELK（Elasticsearch、Logstash、Kibana）架构来对攻击者信息进行可视化管理以便溯源分析**。最后，实验结果表明，本文设计的系统具有良好的拦截效果和兼容性，有一定的应用场景。
 
 **关键词**：RASP；漏洞防护；Java Web；检测和拦截；ELK；日志可视化
+</details>
+
+<details>
+<summary>系统架构</summary>
 
 ### 系统架构
 
@@ -40,6 +41,11 @@ My graduation project, from open source, gives back to open source
 #### 5. 测试靶场拓扑图
 
 ![rasp测试部署网络架构](https://chenlvtang.top/pics/20230611135427.png)
+</details>
+
+
+<details>
+<summary>成果及展望</summary>
 
 ### 成果及展望
 
@@ -70,6 +76,10 @@ My graduation project, from open source, gives back to open source
 ❌缺少一个用户配置读取模块，只能硬编码规则
 
 ❌做着做着发现，Byte Buddy其实好像比Javassit更好用，哈哈 ，但是不想重构
+</details>
+
+<details>
+<summary>部署效果</summary>
 
 ### 部署效果
 
@@ -90,6 +100,34 @@ https://github.com/chenlvtang/TinyRASP/assets/56435336/962ab5fd-b87b-484c-a889-d
 日志可视化：
 
 ![image-20230611135144779](https://chenlvtang.top/pics/20230611135147.png)
+</details>
+
+### 安装
+
+1.准备工作：
+
+```bash
+git clone https://github.com/chenlvtang/TinyRASP.git
+```
+
+下载elasticsearch-8.7.0、kibana-8.7.0、logstash-8.6.2、mysql，并把Config目录中的配置文件放入对应的组件，手动依次开启服务，或使用run.bat批量开启。
+
+在MySQL中创建spring用户，密码默认为spring，并创建spring数据库，将foo.sql文件导入Spring数据库。
+
+2.Agent编译：
+
+```bash
+mvn install
+mvn clean package shade:shade
+```
+
+3.JDK17启动SpringVulTest，JDK8启动TomcatVulTest，并添加JVM启动参数：
+
+```bash
+ -javaagent:/path/to/Agent.jar
+```
+
+运行测试环境
 
 ### 致谢
 
