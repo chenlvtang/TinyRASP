@@ -9,6 +9,7 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -94,7 +95,14 @@ public class RASPUtils {
                 // 获取本地URL地址
                 alertSite = whichSite(String.valueOf(request.getRequestURL()));
                 // 发送告警信息
-                response.sendRedirect(alertSite + "/alert.html?message=" + message);
+                try{
+                    setRedirect(alertSite + "/alert.html?message=" + message);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+//                response.sendRedirect(alertSite + "/alert.html?message=" + message);
+                throw new RedirectException("Redirection initiated.");
             }
             // 清除上下文
             clear();
@@ -337,5 +345,34 @@ public class RASPUtils {
     public static void getLogAndAlert(String attackType) throws IOException {
         getLog(attackType);
         alert(alertInfo);
+    }
+
+    public static void setRedirect(String alertUrl) throws Exception{
+        if (getResponse() != null) {
+            // 设置重定向地址
+            Method setHeaderMethod = getResponse().getClass().getMethod("setHeader", String.class, String.class);
+            setHeaderMethod.invoke(getResponse(), "Location", alertUrl);
+
+            // 使用反射调用 setStatus 方法
+            Method setStatusMethod = getResponse().getClass().getMethod("setStatus", int.class);
+            setStatusMethod.invoke(getResponse(), 302);
+
+            Method getWriterMethod = getResponse().getClass().getMethod("getWriter", new Class[]{});
+            if (getWriterMethod == null) {
+                getWriterMethod = getResponse().getClass().getMethod("getOutputStream", new Class[]{});
+            }
+
+            // 通过反射调用 getWriter 方法
+            Object writer = null;
+            writer = getWriterMethod.invoke(getResponse());
+            Method printMethod = writer.getClass().getMethod("print", new Class[]{String.class});
+            printMethod.invoke( writer, "");
+
+            Method flushMethod =  writer.getClass().getMethod("flush", new Class[]{});
+            flushMethod.invoke( writer);
+
+            Method closeMethod = writer.getClass().getMethod("close", new Class[]{});
+            closeMethod.invoke( writer);
+        }
     }
 }

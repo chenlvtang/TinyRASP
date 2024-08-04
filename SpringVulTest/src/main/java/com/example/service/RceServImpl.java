@@ -1,16 +1,17 @@
 package com.example.service;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class RceServImpl implements RceServ {
 
     @Override
-    public String getResult(String cmd) {
+    public String getResult(String cmd) throws IOException {
         String result = "";
         if (cmd != null) {
-            try {
+
                 Process p = Runtime.getRuntime().exec("cmd /c" + "ping " + cmd);
 
                 InputStream ip = p.getInputStream();
@@ -20,8 +21,6 @@ public class RceServImpl implements RceServ {
                 while ((line = reader.readLine()) != null) {
                     result += line;
                 }
-            } catch (Exception e) {
-            }
         }
         return result;
     }

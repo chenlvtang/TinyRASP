@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.io.IOException;
+
 @Controller
 public class RceCon {
     @RequestMapping(value = "rceTest", method = RequestMethod.GET)
@@ -17,7 +19,7 @@ public class RceCon {
     }
 
     @PostMapping("rceTest")
-    public String postFileRead(@RequestParam("cmd") String cmd, Model model){
+    public String postFileRead(@RequestParam("cmd") String cmd, Model model) throws IOException {
         RceServ rceServ = new RceServImpl();
         String result = rceServ.getResult(cmd);
         model.addAttribute("result", result);
