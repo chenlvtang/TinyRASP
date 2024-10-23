@@ -21,24 +21,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*一些工具方法：如设置上下文，清楚上下文已经告警页面的重定向*/
-/*有大量的重复代码片段，但真的不是我在水代码，而是Oracle你坏事做尽😭，同一个类包名不同导致我根本没法抽象*/
 public class RASPUtils {
     public static String alertInfo = null;
     private static final ThreadLocal<Object> requestContext = new ThreadLocal<>();
     private static final ThreadLocal<Object> responseContext = new ThreadLocal<>();
 
-    public static void setRequest(HttpServletRequest request) {
+    public static <T> void setRequest(T request) {
         requestContext.set(request);
     }
-    public static void setResponse(HttpServletResponse response) {
-        responseContext.set(response);
-    }
-
-    // 对Spring Boot 3.0、以及JakartaEE(Oracle不允许高版本Servlet使用JavaEE)的支持
-    public static void setRequest(jakarta.servlet.http.HttpServletRequest request) {
-        requestContext.set(request);
-    }
-    public static void setResponse(jakarta.servlet.http.HttpServletResponse response) {
+    public static <T> void setResponse(T response) {
         responseContext.set(response);
     }
 
@@ -82,113 +73,71 @@ public class RASPUtils {
         String alertSite = "";
         // 实现重定向到告警页面
         try {
-            if (getRequest() instanceof HttpServletRequest) {
-                HttpServletResponse response = getResponse();
-                HttpServletRequest request = getRequest();
-                // 获取本地URL地址
-                alertSite = whichSite(String.valueOf(request.getRequestURL()));
-                // 发送告警信息
-                response.sendRedirect(alertSite + "/alert.html?message=" + message);
-            } else if (getRequest() instanceof jakarta.servlet.http.HttpServletRequest) {
-                jakarta.servlet.http.HttpServletResponse response = getResponse();
-                jakarta.servlet.http.HttpServletRequest request = getRequest();
-                // 获取本地URL地址
-                alertSite = whichSite(String.valueOf(request.getRequestURL()));
-                // 发送告警信息
-                try{
-                    setRedirect(alertSite + "/alert.html?message=" + message);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-
-//                response.sendRedirect(alertSite + "/alert.html?message=" + message);
-                throw new RedirectException("Redirection initiated.");
-            }
+            // 获取本地URL地址
+            Method getRequestURL = getRequest().getClass().getMethod("getRequestURL");
+            alertSite = whichSite(String.valueOf(
+                    getRequestURL.invoke(getRequest())
+                    )
+            );
+            // 重定向
+            setRedirect(alertSite + "/alert.html?message=" + message);
             // 清除上下文
             clear();
-
-            } catch(Exception e){
-                e.printStackTrace();
-            }
+        } catch(Exception e){
+            e.printStackTrace();
+        }
 
     }
 
-    public static String getUA(){
+    public static String getUA() throws Exception{
         String ua = "";
         //获取攻击者UA
-        if (getRequest() instanceof HttpServletRequest) {
-            HttpServletRequest request = getRequest();
-            if (request != null) {
-                ua = request.getHeader("User-Agent");
-            }
-        } else if (getRequest() instanceof jakarta.servlet.http.HttpServletRequest) {
-            jakarta.servlet.http.HttpServletRequest request = getRequest();
-            if (request != null) {
-                ua = request.getHeader("User-Agent");
-            }
-        }
+        Method getHeader = getRequest().getClass().getMethod("getHeader", String.class);
+        getHeader.invoke(getRequest(), "User-Agent");
+
         return ua;
     }
 
-    public static <T extends HttpServletRequest> String getIP(){
-        if (getRequest() instanceof HttpServletRequest) {
-            HttpServletRequest request = getRequest();
-            String ip = request.getHeader("X-Forwarded-For");
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("Proxy-Client-IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("WL-Proxy-Client-IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("HTTP_CLIENT_IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getRemoteAddr();
-            }
-            String[] ips = ip.split(",");
-            return ips[0].trim();
-        }else if (getRequest() instanceof jakarta.servlet.http.HttpServletRequest) {
-            jakarta.servlet.http.HttpServletRequest request = getRequest();
-            String ip = request.getHeader("X-Forwarded-For");
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("Proxy-Client-IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("WL-Proxy-Client-IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("HTTP_CLIENT_IP");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-            }
-            if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-                ip = request.getRemoteAddr();
-            }
-            String[] ips = ip.split(",");
-            return ips[0].trim();
+    public static <T extends HttpServletRequest> String getIP () throws Exception{
+        String ip = "";
+        Method getHeader = getRequest().getClass().getMethod("getHeader", String.class);
+
+        ip = (String) getHeader.invoke(getRequest(), "X-Forwarded-For");
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = (String) getHeader.invoke(getRequest(), "Proxy-Client-IP");
         }
-        return null;
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = (String) getHeader.invoke(getRequest(), "WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = (String) getHeader.invoke(getRequest(), "HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = (String) getHeader.invoke(getRequest(), "HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            Method getRemoteAddr = getRequest().getClass().getMethod("getRemoteAddr");
+            ip = (String) getRemoteAddr.invoke(getRequest());
+        }
+        String[] ips = ip.split(",");
+        return ips[0].trim();
     }
 
     public static Map<String, Object> getRequestInfo()
-            throws IOException, IOException {        // 返回请求报文
-        if (getRequest() instanceof HttpServletRequest) {
-            HttpServletRequest request = getRequest();
+            throws Exception {        // 返回请求报文
+
             Map<String, Object> requestMap = new HashMap<>();
             // 增加一个URI的记录，来用于kibana筛选被攻击最多的页面/路由
-            String requestURI = request.getRequestURI();
+            Method getRequestURI = getRequest().getClass().getMethod("getRequestURI");
+            String requestURI = (String) getRequestURI.invoke(getRequest());
             requestMap.put("uri", requestURI);
             // 记录请求URI（要包含请求参数） 如/rce?cmd=ls
             String url = "";
             StringBuilder requestURL = new StringBuilder(requestURI);
-            String queryString = request.getQueryString();
+            Method getQueryString = getRequest().getClass().getMethod("getQueryString");
+            String queryString = (String) getQueryString.invoke(getRequest());
 
-            if (queryString == null) {
+            if (queryString == null || queryString.equals("")) {
                 url = requestURL.toString();
             } else {
                 url = requestURL.append('?').append(queryString).toString();
@@ -196,21 +145,33 @@ public class RASPUtils {
             requestMap.put("url", url);
 
             // 记录请求方法
-            requestMap.put("method", request.getMethod());
+            Method getMethod = getRequest().getClass().getMethod("getMethod");
+            requestMap.put("method", getMethod.invoke(getRequest()));
 
             // 记录请求头
             Map<String, String> headersMap = new HashMap<>();
-            Enumeration<String> headerNames = request.getHeaderNames();
+            Method getHeaderNames = getRequest().getClass().getMethod("getHeaderNames");
+            Enumeration<String> headerNames = (Enumeration<String>) getHeaderNames.invoke(
+                    getRequest()
+            );
             while (headerNames.hasMoreElements()) {
                 String headerName = headerNames.nextElement();
-                String headerValue = request.getHeader(headerName);
+                Method getHeader = getRequest().getClass().getMethod("getHeader", String.class);
+                String headerValue = (String) getHeader.invoke(
+                  getRequest(),
+                  headerName
+                );
                 headersMap.put(headerName, headerValue);
             }
             requestMap.put("headers", headersMap);
 
             // 记录请求体
-            ServletInputStream inputStream = request.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            Method getInputStream = getRequest().getClass().getMethod("getInputStream");
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            (InputStream) getInputStream.invoke(
+                                    getRequest()
+                            ), StandardCharsets.UTF_8));
             StringBuilder requestBody = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -219,62 +180,16 @@ public class RASPUtils {
             requestMap.put("body", requestBody);
             // 如果body已经解析过了
             if ((requestBody.toString()).equals("")){
-                Map<String, String[]> requestBodyMap = request.getParameterMap();
+                Method getParameterMap = getRequest().getClass().getMethod("getParameterMap");
+                Map<String, String[]> requestBodyMap = (Map<String, String[]>) getParameterMap.invoke(
+                        getRequest()
+                );
                 JSONObject jsonObject = JSONObject.from(requestBodyMap);
                 String requestBodyString = jsonObject.toString();
                 requestMap.put("body", requestBodyString);
             }
             return requestMap;
-        }else if (getRequest() instanceof jakarta.servlet.http.HttpServletRequest) {
-            jakarta.servlet.http.HttpServletRequest request = getRequest();
-            Map<String, Object> requestMap = new HashMap<>();
-            // 增加一个URI的记录，来用于kibana筛选被攻击最多的页面/路由
-            String requestURI = request.getRequestURI();
-            requestMap.put("uri", requestURI);
-            // 记录请求URI（要包含请求参数） 如/rce?cmd=ls
-            String url = "";
-            StringBuilder requestURL = new StringBuilder(requestURI);
-            String queryString = request.getQueryString();
 
-            if (queryString == null) {
-                url = requestURL.toString();
-            } else {
-                url = requestURL.append('?').append(queryString).toString();
-            }
-            requestMap.put("url", url);
-
-            // 记录请求方法
-            requestMap.put("method", request.getMethod());
-
-            // 记录请求头
-            Map<String, String> headersMap = new HashMap<>();
-            Enumeration<String> headerNames = request.getHeaderNames();
-            while (headerNames.hasMoreElements()) {
-                String headerName = headerNames.nextElement();
-                String headerValue = request.getHeader(headerName);
-                headersMap.put(headerName, headerValue);
-            }
-            requestMap.put("headers", headersMap);
-
-            // 记录请求体
-            jakarta.servlet.ServletInputStream inputStream = request.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            StringBuilder requestBody = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                requestBody.append(line);
-            }
-            requestMap.put("body", requestBody);
-            // 如果body已经解析过了
-            if ((requestBody.toString()).equals("")){
-                Map<String, String[]> requestBodyMap = request.getParameterMap();
-                JSONObject jsonObject = JSONObject.from(requestBodyMap);
-                String requestBodyString = jsonObject.toString();
-                requestMap.put("body", requestBodyString);
-            }
-            return requestMap;
-        }
-        return null;
     }
 
     public static String getStackTrace() {
@@ -285,7 +200,7 @@ public class RASPUtils {
         return sw.toString();
     }
 
-    public static void getLog(String type) throws IOException {
+    public static void getLog(String type) throws Exception {
         // 告警日志记录
         System.setProperty("user.timezone", "GMT+8");
         Logger logger = LogManager.getLogger(RASPUtils.class);
@@ -314,7 +229,7 @@ public class RASPUtils {
         logger.warn(log.toJSONString());
     }
 
-    public static void getLogAndAlert(String attackType) throws IOException {
+    public static void getLogAndAlert(String attackType) throws Exception {
         getLog(attackType);
         alert(alertInfo);
     }
