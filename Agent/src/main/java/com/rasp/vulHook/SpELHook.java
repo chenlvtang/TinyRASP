@@ -29,6 +29,8 @@ public class SpELHook implements ClassFileTransformer {
                 ClassPool pool = ClassPool.getDefault();
                 ClassClassPath classPath = new ClassClassPath(this.getClass());
                 pool.insertClassPath(classPath);
+                // 暂时用来解决源码运行可以，但打包后的SpringBoot类无法Hook的问题
+                pool.appendClassPath(new LoaderClassPath(Thread.currentThread().getContextClassLoader()));
 
                 System.out.println("Into the SpELHook");
                 CtClass clz = pool.get(loadName);
