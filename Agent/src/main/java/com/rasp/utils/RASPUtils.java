@@ -314,34 +314,6 @@ public class RASPUtils {
         logger.warn(log.toJSONString());
     }
 
-    public static String getLogAndAlertCode(String attackType){
-        // 经过反复折磨写出来的重定向到告警页面和记录日志代码，不要轻易改动 ORZ
-        String code =
-                // 反射调用RASPUtils
-                "Class utilsClass = " +
-                        "Class.forName(\"com.rasp.utils.RASPUtils\", " +
-                        "true, Thread.currentThread().getContextClassLoader());" +
-                        // 实例化RASPUtils
-                        "Object utilsObj = utilsClass.newInstance();" +
-                        // 获取getLog方法
-                        "java.lang.reflect.Method method =" +
-                        "utilsClass.getDeclaredMethod(\"getLog\", "+
-                        "new Class []{String.class});" +
-                        // 调用日志记录方法
-                        "Object[] args = new Object[]{\""+ attackType +"\"};" +
-                        "method.invoke(utilsObj, args);" +
-                        // 获取alert方法
-                        "method = " +
-                        "utilsClass.getDeclaredMethod(\"alert\", " +
-                        "new Class []{String.class});" +
-                        // 调用告警方法
-                        "Object[] value = new Object[]{(String) utilsClass.getDeclaredField(\"alertInfo\").get(null)};" +
-                        "method.invoke(utilsObj, value);" +
-                        // 进行拦截
-                        "return null;";
-        return code;
-    }
-
     public static void getLogAndAlert(String attackType) throws IOException {
         getLog(attackType);
         alert(alertInfo);
