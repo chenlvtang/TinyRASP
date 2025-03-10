@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.rasp</groupId>
+        <artifactId>Agent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>rasp-plugins</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.29.2-GA</version>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+        </dependency>
+
+        <!--This is why I hate Oracle-->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>5.0.0</version>
+        </dependency>
+
+        <!-- Log4j2的依赖 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
+        </dependency>
+
+        <!-- FastJson的依赖 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>2.0.25</version>
+        </dependency>
+
+        <!-- IOUtils依赖 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.14.0</version>
+        </dependency>
+
+        <!-- 解决JsonLayout报错问题-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.13.4.2</version>
+        </dependency>
+
+        <!-- SQL语句的合法性判断-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.10</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <!--设置构件输出地址-->
+                    <outputDirectory>${project.parent.basedir}/rasp-output/plugins/</outputDirectory>
+                    <!--打包的jar文件名，如果配置shadedArtifactAttached=true,该jar包不包含依赖的第三方包-->
+                    <finalName>${project.artifactId}</finalName>
+                    <!-- true: 默认fasle, 最小化打包，去掉未用到的第三方包中的类,危险-->
+                    <minimizeJar>false</minimizeJar>
+                    <!--true: 默认true, 如果第三方包已经被打到jar中，依赖的jar的<dependencies>将会从jar包中的maven pom中删除-->
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <!--true: 默认fasle, 打包的时候生成source jar,打包进去的第三方包也会把第三方包的sourc也打到source jar中-->
+                    <createSourcesJar>false</createSourcesJar>
+                    <!--生成classifier，配置finalName后生成的jar包名格式是${project.name}-${project.version}-${classifier}.jar-->
+                    <!--默认会生成一个Jar包和一个以 “-shaded”为结尾的uber-jar包，可以通过配置来指定finalName打出来的的后缀名-->
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
+                    <!--打包第三方包-->
+                    <artifactSet>
+                        <includes>
+                            <include>*:*</include>
+                        </includes>
+                    </artifactSet>
+                    <!--重新命名依赖的第三方包的类包名-->
+<!--                    <relocations>-->
+<!--                        <relocation>-->
+<!--                            <pattern>javassist</pattern>-->
+<!--                            <shadedPattern>org.demo.javassist</shadedPattern>-->
+<!--                        </relocation>-->
+<!--                    </relocations>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
