@@ -6,6 +6,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 
+import java.io.ObjectStreamClass;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -13,7 +14,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SerialHook implements ClassFileTransformer {
+public class SerialHook extends AbstractHook {
     // jdk反序列化类黑名单（JRASP加自收集）
     private static Set<String> BlackClassSet = new HashSet<String>(Arrays.asList(
             "org.codehaus.groovy.runtime.ConvertedClosure",
@@ -84,16 +85,7 @@ public class SerialHook implements ClassFileTransformer {
                 // Hook住 resolveClass (Java反序列化流程中的关键点)
                 CtMethod ctMethod = clz.getDeclaredMethod("resolveClass");
 
-                String code = "System.out.println(\"In the SerialHook \" + $1);" +
-                        "Class raspClassLoaderClass = Class.forName(\"com.rasp.myLoader.RaspClassLoader\", true, Thread.currentThread().getContextClassLoader());"+
-                        "java.lang.reflect.Method  getRaspClassLoader = raspClassLoaderClass.getMethod(\"getRaspClassLoader\", new Class[0]);"+
-                        "ClassLoader raspClassLoaderInstance = getRaspClassLoader.invoke(null, new Object[0]);"+
-
-                        "Class hookClass = Class.forName(\"com.rasp.hooks.SerialHook.java\",true, Thread.currentThread().getContextClassLoader());" +
-                        "java.lang.reflect.Method checkName = hookClass.getDeclaredMethod(\"checkName\", new Class []{String.class});" +
-                        "checkName.invoke(hookClass.newInstance(), new Object[]{$1.getName()});"
-                        ;
-
+                String code = RASPUtils.getInjectCode(this.getClass().getName());
                 ctMethod.insertBefore(code);
                 System.out.println("Finish the SerialHook");
                 return clz.toBytecode();
@@ -104,6 +96,11 @@ public class SerialHook implements ClassFileTransformer {
         } else {
             return classfileBuffer;
         }
+    }
+
+    @Override
+    public void checkLogic(Object[] args) throws Exception {
+        checkName(((ObjectStreamClass) args[0]).getName());
     }
 
 

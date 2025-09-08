@@ -3,6 +3,7 @@ package com.rasp.myLoader;
 import com.rasp.raspMain.MyAgent;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Paths;
@@ -67,11 +68,18 @@ public class RaspClassLoader extends URLClassLoader {
             if (name.endsWith(".class") && name.startsWith("com/rasp/hooks")) {
                 String className = name.replace("/", ".").replace(".class", "");
 
-                // 实例化类
-                Class<?> loadedClass = loadClass(className);
-                Object instance = loadedClass.newInstance();
 
+
+                // 加载并实例化类
+                Class<?> loadedClass = loadClass(className);
                 System.out.println("Loaded class: " + className);
+                // 使用Java反射API检测抽象类
+                if (Modifier.isAbstract(loadedClass.getModifiers())) {
+                    System.out.println("跳过抽象类实例化：" + className);
+                    continue;
+                }
+
+                Object instance = loadedClass.newInstance();
                 result.add(instance);
             }
         }

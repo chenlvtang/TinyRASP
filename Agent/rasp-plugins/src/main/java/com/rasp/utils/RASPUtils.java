@@ -283,4 +283,18 @@ public class RASPUtils {
             closeMethod.invoke( writer);
         }
     }
+
+    public static String getInjectCode(String className) throws Exception {
+        StringBuilder code = new StringBuilder();
+        String getRaspClassLoaderClass = "Class raspClassLoaderClass = Class.forName(\"com.rasp.myLoader.RaspClassLoader\", true, Thread.currentThread().getContextClassLoader());";
+        String getRaspClassInstance = "java.lang.reflect.Method  getRaspClassLoader = raspClassLoaderClass.getMethod(\"getRaspClassLoader\", new Class[0]);" +
+                "ClassLoader raspClassLoaderInstance = getRaspClassLoader.invoke(null, new Object[0]);";
+        String getTransfomer = "Class hookClass = Class.forName(\"" + className + "\", true, raspClassLoaderInstance);";
+        String getCheckLogic = "java.lang.reflect.Method checkLogicMethod = hookClass.getDeclaredMethod(\"checkLogic\", new Class []{Object[].class});"+
+                "checkLogicMethod.invoke(hookClass.newInstance(), new Object[]{$args});";
+
+
+        return code.append(getRaspClassLoaderClass).append(getRaspClassInstance).append(getTransfomer).append(getCheckLogic).toString();
+
+    }
 }
