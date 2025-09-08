@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class FileHook implements ClassFileTransformer {
+public class FileHook extends AbstractHook {
     // 允许读取的文件格式
     private static final Set<String> ALLOWED_FILE_EXTENSIONS = new HashSet<>(Arrays.asList("css", "jpg"));
     // 目录穿越黑名单
@@ -46,16 +46,7 @@ public class FileHook implements ClassFileTransformer {
                 for(CtBehavior cb: ctBehaviors) {
                     CtClass[] parameterTypes = cb.getParameterTypes();
                     if (parameterTypes != null && parameterTypes.length == 1 && parameterTypes[0].getName().equals("java.io.File")) {
-                        // 排除tzdb.dat，不然会影响log4j2的加载
-                        String code = "if (!($1.getPath().endsWith(\"tzdb.dat\"))){" +
-                                "System.out.println(\"In the FileHook \" + $1);" +
-                                "Class raspClassLoaderClass = Class.forName(\"com.rasp.myLoader.RaspClassLoader\", true, Thread.currentThread().getContextClassLoader());"+
-                                "java.lang.reflect.Method  getRaspClassLoader = raspClassLoaderClass.getMethod(\"getRaspClassLoader\", new Class[0]);"+
-                                "ClassLoader raspClassLoaderInstance = getRaspClassLoader.invoke(null, new Object[0]);"+
-
-                                "Class hookClass = Class.forName(\"com.rasp.hooks.FileHook\",true, raspClassLoaderInstance);" +
-                                "java.lang.reflect.Method checkFilePathMethod = hookClass.getDeclaredMethod(\"checkFilePath\", new Class []{(java.io.File).class});" +
-                                "checkFilePathMethod.invoke(hookClass.newInstance(), new Object[]{$1});}";
+                        String code = RASPUtils.getInjectCode(this.getClass().getName());
                         cb.insertBefore(code);
                     }
                 }
@@ -69,9 +60,18 @@ public class FileHook implements ClassFileTransformer {
         return classfileBuffer;
     }
 
+    @Override
+    public void checkLogic(Object[] args) throws Exception {
+        checkFilePath(((File) args[0]).getPath());
+    }
+
 
     // 路径检测算法
     public static void checkFilePath(String filePath) throws Exception {
+        // 排除tzdb.dat，不然会影响log4j2的加载
+        if (filePath.endsWith("tzdb.dat")){
+            return;
+        }
         // 判断是否为空
         if(filePath == null){
             return;
