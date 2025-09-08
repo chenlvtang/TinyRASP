@@ -12,9 +12,10 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class RceHook implements ClassFileTransformer {
+public class RceHook extends AbstractHook {
 
     public byte[] transform(ClassLoader loader, String className,
                             Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
@@ -32,17 +33,7 @@ public class RceHook implements ClassFileTransformer {
                 CtBehavior[] ctBehaviors = clz.getDeclaredConstructors();
                 for(CtBehavior cb: ctBehaviors) {
                     // 插入检测函数
-                    String code = "System.out.println(\"In the RCEHook \" + $1 + Thread.currentThread().getContextClassLoader());" +
-                            // 获取参数
-                            "String _ = String.join(\" \", $1);" +
-                            // 通过反射动态加载 RaspClassLoader, 因为ProcessImpl由BootStarpClassLoader加载，没办法直接调用RaspClassLoader
-                            "Class raspClassLoaderClass = Class.forName(\"com.rasp.myLoader.RaspClassLoader\", true, Thread.currentThread().getContextClassLoader());"+
-                            "java.lang.reflect.Method  getRaspClassLoader = raspClassLoaderClass.getMethod(\"getRaspClassLoader\", new Class[0]);"+
-                            "ClassLoader raspClassLoaderInstance = getRaspClassLoader.invoke(null, new Object[0]);"+
-
-                            "Class hookClass = Class.forName(\"com.rasp.hooks.RceHook\",true, raspClassLoaderInstance);"+
-                            "java.lang.reflect.Method checkCmd = hookClass.getDeclaredMethod(\"checkCmd\", new Class []{String.class});" +
-                            "checkCmd.invoke(hookClass.newInstance(), new Object[]{_});";
+                    String code = RASPUtils.getInjectCode(this.getClass().getName());
                     cb.insertBefore(code);
                 }
 
@@ -55,6 +46,11 @@ public class RceHook implements ClassFileTransformer {
         } else {
             return classfileBuffer;
         }
+    }
+
+    @Override
+    public void checkLogic(Object[] args) throws Exception {
+        checkCmd(Arrays.toString(((String[]) args[0])));
     }
 
     public static void checkCmd(String cmd) throws Exception {
