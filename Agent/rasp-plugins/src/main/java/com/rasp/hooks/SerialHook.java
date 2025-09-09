@@ -89,7 +89,7 @@ public class SerialHook implements ClassFileTransformer {
                         "java.lang.reflect.Method  getRaspClassLoader = raspClassLoaderClass.getMethod(\"getRaspClassLoader\", new Class[0]);"+
                         "ClassLoader raspClassLoaderInstance = getRaspClassLoader.invoke(null, new Object[0]);"+
 
-                        "Class hookClass = Class.forName(\"com.rasp.vulHook.SerialHook\",true, Thread.currentThread().getContextClassLoader());" +
+                        "Class hookClass = Class.forName(\"com.rasp.hooks.SerialHook.java\",true, Thread.currentThread().getContextClassLoader());" +
                         "java.lang.reflect.Method checkName = hookClass.getDeclaredMethod(\"checkName\", new Class []{String.class});" +
                         "checkName.invoke(hookClass.newInstance(), new Object[]{$1.getName()});"
                         ;
