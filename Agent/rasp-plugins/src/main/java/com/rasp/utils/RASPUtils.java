@@ -1,10 +1,10 @@
 package com.rasp.utils;
 
 import com.alibaba.fastjson2.JSONObject;
+import javassist.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.servlet.ServletInputStream;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
@@ -293,8 +293,15 @@ public class RASPUtils {
         String getCheckLogic = "java.lang.reflect.Method checkLogicMethod = hookClass.getDeclaredMethod(\"checkLogic\", new Class []{Object[].class});"+
                 "checkLogicMethod.invoke(hookClass.newInstance(), new Object[]{$args});";
 
-
         return code.append(getRaspClassLoaderClass).append(getRaspClassInstance).append(getTransfomer).append(getCheckLogic).toString();
+    }
 
+    public static CtClass getTargetClass(String className, Class<?> transfomer) throws Exception {
+        String loadName = className.replace("/", ".");
+        ClassPool pool = ClassPool.getDefault();
+        ClassClassPath classPath = new ClassClassPath(transfomer.getClass());
+        pool.insertClassPath(classPath);
+        CtClass clz = pool.get(loadName);
+        return clz;
     }
 }
